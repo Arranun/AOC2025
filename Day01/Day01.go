@@ -8,8 +8,8 @@ import (
 )
 
 func main() {
-	//args := os.Args[1:]
-	file, err := os.ReadFile("part1")
+	args := os.Args[1:]
+	file, err := os.ReadFile(args[0])
 	if err != nil {
 		panic(err)
 	}
