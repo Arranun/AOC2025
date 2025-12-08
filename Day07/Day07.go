@@ -10,8 +10,8 @@ import (
 type tachyonGrid struct {
 	currentPos map[[2]int]bool
 	visited    map[[2]int]bool
+	splitters  map[[2]int]bool
 	grid       helper.Grid
-	splits     int
 }
 
 func main() {
@@ -22,22 +22,19 @@ func main() {
 	}
 	lines := strings.Split(string(file), "\r\n")
 	tachyon := tachyonGrid{}
-	tachyon.splits = 0
 	tachyon.grid = helper.GetGrid(lines)
 	tachyon.visited = map[[2]int]bool{}
 	tachyon.currentPos = map[[2]int]bool{}
+	tachyon.splitters = map[[2]int]bool{}
 	for _, point := range tachyon.grid.Points {
 		if point.Symbol == 'S' {
 			tachyon.currentPos[[2]int{point.X, point.Y}] = true
 		}
 	}
-	part1 := 0
 	for len(tachyon.currentPos) > 0 {
-		if tachyon.step() {
-			part1++
-		}
+		tachyon.step()
 	}
-	fmt.Println(part1 - 1)
+	fmt.Println(len(tachyon.splitters))
 }
 
 func (t *tachyonGrid) step() bool {
@@ -52,6 +49,7 @@ func (t *tachyonGrid) step() bool {
 	}
 	for i := curr[1]; i < t.grid.Borders[1]; i++ {
 		if t.grid.Points[[2]int{curr[0], i}].Symbol == '^' {
+			t.splitters[[2]int{curr[0], i}] = true
 			t.currentPos[[2]int{curr[0] + 1, i}] = true
 			t.currentPos[[2]int{curr[0] + -1, i}] = true
 			return true
