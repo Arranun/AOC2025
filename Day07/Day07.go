@@ -11,7 +11,7 @@ import (
 type tachyonGrid struct {
 	currentSplitter map[[2]int]bool
 	visitedSplitter map[[2]int][][2]int
-	grid            helper.Grid
+	grid            helper.Grid[[2]int]
 }
 
 func main() {
@@ -22,16 +22,16 @@ func main() {
 	}
 	lines := strings.Split(string(file), "\r\n")
 	tachyon := tachyonGrid{}
-	tachyon.grid = helper.GetGrid(lines)
+	tachyon.grid = helper.GetGrid2D(lines)
 	tachyon.visitedSplitter = map[[2]int][][2]int{}
 	tachyon.currentSplitter = map[[2]int]bool{}
 	firstSplitter := [2]int{0, 0}
 	for _, point := range tachyon.grid.Points {
 		if point.Symbol == 'S' {
-			for i := point.Y; i < tachyon.grid.Borders[1]; i++ {
-				if tachyon.grid.Points[[2]int{point.X, i}].Symbol == '^' {
-					tachyon.currentSplitter[[2]int{point.X, i}] = true
-					firstSplitter = [2]int{point.X, i}
+			for i := point.Position[1]; i < tachyon.grid.Borders[1]; i++ {
+				if tachyon.grid.Points[[2]int{point.Position[0], i}].Symbol == '^' {
+					tachyon.currentSplitter[[2]int{point.Position[0], i}] = true
+					firstSplitter = [2]int{point.Position[0], i}
 					break
 				}
 			}
