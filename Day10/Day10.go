@@ -3,12 +3,12 @@ package main
 import (
 	"fmt"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 )
 
 type machine struct {
-	registers     map[string]int
 	indicators    []bool
 	indicatorGoal []bool
 	buttons       [][]int
@@ -50,5 +50,95 @@ func main() {
 	}
 	for _, m := range machines {
 		fmt.Println(m)
+		fmt.Println(m.getAmountOfBottonPresses())
 	}
+}
+
+func (m machine) getAmountOfBottonPresses() int {
+	relevantIndicators := make(map[int]bool)
+	for i, indicator := range m.indicatorGoal {
+		if indicator {
+			relevantIndicators[i] = true
+		}
+	}
+	relevantButtons := []int{}
+	for i, button := range m.buttons {
+		for _, changedIndictors := range button {
+			if relevantIndicators[changedIndictors] {
+				relevantButtons = append(relevantButtons, i)
+				break
+			}
+		}
+	}
+	shortestRoute := len(relevantButtons) + 1
+	activeRoutes := map[string][]int{}
+	visited := map[string]bool{}
+	finishedRoutes := map[string][]int{}
+	for relevantButton := range relevantButtons {
+		activeRoutes[strconv.Itoa(relevantButton)] = []int{relevantButton}
+	}
+	for len(activeRoutes) > 0 {
+		routeString := ""
+		routeCombination := []int{}
+		for str, combi := range activeRoutes {
+			routeString = str
+			routeCombination = combi
+			break
+		}
+		visited[routeString] = true
+		delete(activeRoutes, routeString)
+		if m.TestButtonCombination(routeCombination) {
+			finishedRoutes[routeString] = routeCombination
+			if len(routeCombination) < shortestRoute {
+				if len(routeCombination) == 1 {
+					fmt.Println(routeCombination)
+				}
+				shortestRoute = len(routeCombination)
+			}
+			continue
+		}
+		if len(routeCombination) == len(relevantButtons) {
+			continue
+		}
+		currRelevantButton := []int{}
+		for _, relevantButton := range relevantButtons {
+			if !contains(routeCombination, relevantButton) {
+				currRelevantButton = append(currRelevantButton, relevantButton)
+			}
+		}
+		for _, button := range currRelevantButton {
+			newRouteCombination := append(routeCombination, button)
+			sort.Ints(newRouteCombination)
+			newRouteString := strings.Trim(strings.Join(strings.Fields(fmt.Sprint(newRouteCombination)), ","), "[]")
+			if !visited[newRouteString] {
+				activeRoutes[newRouteString] = newRouteCombination
+			}
+		}
+	}
+	return shortestRoute
+}
+
+func contains(routeCombination []int, relevantButton int) bool {
+	for _, button := range routeCombination {
+		if relevantButton == button {
+			return true
+		}
+	}
+	return false
+}
+
+func (m machine) TestButtonCombination(buttons []int) bool {
+	indicator := make([]bool, len(m.indicatorGoal))
+	for _, buttonIndex := range buttons {
+		button := m.buttons[buttonIndex]
+		for _, changedIndicator := range button {
+			indicator[changedIndicator] = !indicator[changedIndicator]
+		}
+	}
+	for i := 0; i < len(m.indicatorGoal); i++ {
+		if indicator[i] != m.indicatorGoal[i] {
+			return false
+		}
+	}
+	return true
 }
