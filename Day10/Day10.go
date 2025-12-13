@@ -17,7 +17,7 @@ type machine struct {
 
 func main() {
 	//args := os.Args[1:]
-	file, err := os.ReadFile("testInput")
+	file, err := os.ReadFile("part1")
 	if err != nil {
 		panic(err)
 	}
@@ -48,10 +48,11 @@ func main() {
 		}
 		machines = append(machines, m)
 	}
+	sum := 0
 	for _, m := range machines {
-		fmt.Println(m)
-		fmt.Println(m.getAmountOfBottonPresses())
+		sum += m.getAmountOfBottonPresses()
 	}
+	fmt.Println(sum)
 }
 
 func (m machine) getAmountOfBottonPresses() int {
@@ -62,13 +63,8 @@ func (m machine) getAmountOfBottonPresses() int {
 		}
 	}
 	relevantButtons := []int{}
-	for i, button := range m.buttons {
-		for _, changedIndictors := range button {
-			if relevantIndicators[changedIndictors] {
-				relevantButtons = append(relevantButtons, i)
-				break
-			}
-		}
+	for i, _ := range m.buttons {
+		relevantButtons = append(relevantButtons, i)
 	}
 	shortestRoute := len(relevantButtons) + 1
 	activeRoutes := map[string][]int{}
@@ -90,9 +86,6 @@ func (m machine) getAmountOfBottonPresses() int {
 		if m.TestButtonCombination(routeCombination) {
 			finishedRoutes[routeString] = routeCombination
 			if len(routeCombination) < shortestRoute {
-				if len(routeCombination) == 1 {
-					fmt.Println(routeCombination)
-				}
 				shortestRoute = len(routeCombination)
 			}
 			continue
@@ -107,7 +100,9 @@ func (m machine) getAmountOfBottonPresses() int {
 			}
 		}
 		for _, button := range currRelevantButton {
-			newRouteCombination := append(routeCombination, button)
+			newRouteCombination := make([]int, len(routeCombination))
+			copy(newRouteCombination, routeCombination)
+			newRouteCombination = append(newRouteCombination, button)
 			sort.Ints(newRouteCombination)
 			newRouteString := strings.Trim(strings.Join(strings.Fields(fmt.Sprint(newRouteCombination)), ","), "[]")
 			if !visited[newRouteString] {
